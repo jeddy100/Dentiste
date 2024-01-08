@@ -14,6 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -145,5 +146,85 @@ public class Control {
             return "redirect:/consultations/list";
         }
     }
+
+    @GetMapping("/insertAlea")
+    public String alea(Model model){
+        model.addAttribute("listEtats", etatRepository.findAll());
+        return "insertAlea";
+    }
+
+
+    @PostMapping("/patientaleapost")
+    public RedirectView patientAleaPost(
+            @ModelAttribute Patient patient,
+            @RequestParam("dents") String dentsInput,
+            @RequestParam("etats") String etatsInput,
+            RedirectAttributes attributes,
+            Model model
+    ) {
+        if(dentsInput.contains(";")) {
+
+            String[] dentsArray = dentsInput.split(";");
+            String[] etatsArray = etatsInput.split(";");
+
+            patientRepository.save(patient);
+
+            List<InfoDent> infoDents = new ArrayList<>();
+            for (int i = 0; i < Math.min(dentsArray.length, etatsArray.length); i++) {
+                String dentInput = dentsArray[i];
+                int etatValue = Integer.parseInt(etatsArray[i]);
+
+                int dentNumber = Integer.parseInt(dentInput.substring(1));
+
+                Dent dent = dentRepository.getDentByNumeroDent(dentNumber);
+
+                Etat etat = etatRepository.getById((long) etatValue);
+
+                InfoDent infoDent = new InfoDent();
+                infoDent.setPatient(patient);
+                infoDent.setDent(dent);
+                infoDent.setEtat(etat);
+                infoDent.setDateInfoDent(LocalDateTime.now());
+
+                infoDents.add(infoDent);
+            }
+
+            infoDentRepository.saveAll(infoDents);
+        } else if (dentsInput.contains("-")) {
+            patientRepository.save(patient);
+            List<InfoDent> infoDents = new ArrayList<>();
+            dentsInput=dentsInput.replace("D","");
+            dentsInput=dentsInput.replace("d","");
+
+            String[] dentsArray = dentsInput.split("-");
+            String etatValue = etatsInput;
+            etatValue=etatValue.trim();
+            if (dentsArray.length ==2) {
+                int debut= Integer.parseInt(dentsArray[0]);
+                int fin= Integer.parseInt(dentsArray[1]);
+                for (int i = debut; i <= (fin-debut)+1; i++) {
+                    Dent dent = dentRepository.getDentByNumeroDent(i);
+
+                    Etat etat = etatRepository.getById(Long.valueOf(etatValue));
+
+                    InfoDent infoDent = new InfoDent();
+                    infoDent.setPatient(patient);
+                    infoDent.setDent(dent);
+                    infoDent.setEtat(etat);
+                    infoDent.setDateInfoDent(LocalDateTime.now());
+
+                    infoDents.add(infoDent);
+                }
+                infoDentRepository.saveAll(infoDents);
+
+            }
+        }
+
+
+        return new RedirectView("/insertAlea", true);
+    }
+
+
+
 
 }

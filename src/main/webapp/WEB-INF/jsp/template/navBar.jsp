@@ -22,7 +22,8 @@
         <div class="collapse" id="patient">
           <ul class="nav flex-column sub-menu">
             <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/insertPatient">ajouter</a></li>
-            <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/listMeuble">liste</a></li>
+            <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/insertAlea">alea</a></li>
+
 
           </ul>
         </div>
